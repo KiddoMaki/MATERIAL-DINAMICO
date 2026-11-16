@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pregunta 7 · DBaaS frente a IaaS, PaaS y SaaS — Laboratorio Arquitecturas BD vs. SI</title>
+  <meta name="description" content="Laboratorio interactivo: la frontera técnica entre DBaaS e IaaS, PaaS y SaaS, la responsabilidad compartida y el vendor lock-in.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/logic.js" defer></script>
+  <script src="js/common.js" defer></script>
+  <script src="js/pregunta7.js" defer></script>
+</head>
+<body data-nivel="universitario">
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 32 32"><rect x="3" y="4" width="26" height="8" rx="2" fill="#3b82f6"/><rect x="3" y="14" width="26" height="6" rx="2" fill="#a78bfa"/><rect x="3" y="22" width="26" height="6" rx="2" fill="#fbbf24"/><circle cx="8" cy="8" r="1.6" fill="#fff"/><circle cx="8" cy="17" r="1.4" fill="#fff"/><circle cx="8" cy="25" r="1.4" fill="#fff"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l3 2M9 2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-nube" viewBox="0 0 64 40"><path d="M18 36h30a12 12 0 0 0 1-24A16 16 0 0 0 19 10 13 13 0 0 0 18 36z" fill="#e0e9ff" stroke="#1d4ed8" stroke-width="3"/></symbol>
+</svg>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="barra">
+  <div class="barra-in">
+    <a class="marca" href="index.html"><svg aria-hidden="true"><use href="#i-logo"/></svg>Lab · Arquitecturas BD vs. SI</a>
+    <nav aria-label="Páginas del laboratorio">
+      <ul>
+        <li><a href="index.html">Pregunta 2</a></li>
+        <li><a href="pregunta7.html" aria-current="page">Pregunta 7</a></li>
+        <li><a class="nav-examen" href="#respuesta">Respuesta de examen</a></li>
+      </ul>
+    </nav>
+    <div class="barra-herr">
+      <div class="nivel" role="group" aria-label="Nivel de explicación">
+        <button type="button" data-set-nivel="sencillo" aria-pressed="false">Explicación sencilla</button>
+        <button type="button" data-set-nivel="universitario" aria-pressed="true">Nivel universitario</button>
+      </div>
+      <div class="progreso">
+        <label for="progreso-barra">Progreso</label>
+        <progress id="progreso-barra" max="8" value="0">0 de 8</progress>
+        <span id="progreso-texto" aria-hidden="true">0/8</span>
+        <button type="button" class="btn-mini" id="reiniciar-progreso">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="anuncios" class="sr-only" aria-live="polite"></div>
+
+<main id="contenido">
+
+  <section class="hero" aria-labelledby="titulo">
+    <div>
+      <span class="eyebrow">Bases de Datos II · Pregunta 7</span>
+      <h1 id="titulo">DBaaS: una base de datos gestionada, no una cuarta capa universal</h1>
+      <blockquote class="enunciado">
+        <p>«El modelo de Base de Datos como Servicio (Database as a Service, DBaaS) entrega entornos virtualizados con elasticidad bajo demanda, backups automáticos y abstracción de hardware. Analice la frontera técnica que separa a una arquitectura DBaaS respecto de las capas de infraestructura (IaaS), plataforma (PaaS) y software (SaaS) en el ciclo de vida de un sistema de información, destacando las ventajas e inconvenientes en términos de vendor lock-in y control del sistema.»</p>
+        <cite>Hoja «Bases de Datos II — Arquitecturas BD vs. Arquitecturas SI» (16/11/2026), pregunta 7.</cite>
+      </blockquote>
+      <p class="solo-uni"><strong>Tesis:</strong> <button type="button" class="termino" data-termino="iaas">IaaS</button>, <button type="button" class="termino" data-termino="paas">PaaS</button> y <button type="button" class="termino" data-termino="saas">SaaS</button> son modelos amplios de servicio que difieren en cuánto administra el proveedor y cuánto el cliente. <button type="button" class="termino" data-termino="dbaas">DBaaS</button> es una <strong>oferta especializada de base de datos gestionada</strong>, que suele clasificarse como servicio administrado dentro del ámbito PaaS; su nombre comercial y sus responsabilidades concretas varían según el proveedor y el plan.</p>
+      <p class="solo-sencillo"><strong>En pocas palabras:</strong> en la nube puedes alquilar máquinas (IaaS), un lugar donde correr tu programa (PaaS) o un programa ya hecho (SaaS). DBaaS es alquilar una base de datos que otro mantiene funcionando. Pero tus tablas, tus consultas y la protección de tus datos siguen siendo tu responsabilidad.</p>
+    </div>
+    <aside class="idea-clave" aria-labelledby="idea-clave-t">
+      <h2 id="idea-clave-t"><svg class="reloj" aria-hidden="true"><use href="#i-reloj"/></svg>Idea clave en 20 segundos</h2>
+      <p><strong>DBaaS</strong> = base de datos gestionada, normalmente dentro de la familia PaaS.</p>
+      <p>El proveedor opera el motor; tú sigues a cargo del esquema, los accesos y los datos.</p>
+      <p>Ganas rapidez y menos carga operativa; pierdes control y te expones al <button type="button" class="termino" data-termino="lock-in">vendor lock-in</button>.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Conceptos ===== -->
+  <section class="seccion" aria-labelledby="modelos-t">
+    <h2 id="modelos-t">Cuatro ofertas, una pregunta: ¿quién administra qué?</h2>
+    <div class="rejilla-2">
+      <article class="tarjeta">
+        <h3>IaaS · infraestructura</h3>
+        <p>El proveedor administra centro de datos, hardware y virtualización. El cliente configura y administra el sistema operativo, instala el motor de BD, aplica sus parches, diseña el esquema y se encarga de aplicaciones, políticas y respaldos (salvo que contrate servicios adicionales).</p>
+        <p><em>Ejemplo:</em> una máquina virtual donde el equipo instala PostgreSQL por su cuenta.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>PaaS · plataforma</h3>
+        <p>El proveedor administra infraestructura, sistema operativo y entorno de ejecución. El cliente desarrolla y despliega su aplicación y gestiona código, datos y configuraciones.</p>
+        <p><em>Ejemplo:</em> una plataforma administrada donde se despliega la API de facturación y stock. Una plataforma para ejecutar código no es lo mismo que una base de datos gestionada.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>DBaaS · base de datos gestionada</h3>
+        <p>El proveedor gestiona el aprovisionamiento y la operación del motor según el contrato (parches, backups automáticos, disponibilidad, opciones de escalado). El cliente sigue a cargo del <strong>modelo de datos, las consultas, los permisos de acceso, la clasificación de los datos, la configuración de seguridad, los costos y la recuperación que necesita</strong>.</p>
+        <p class="solo-uni"><em>Matiz:</em> no todos los DBaaS ofrecen escalado automático, backups ilimitados, alta disponibilidad o migración sin costo; depende del plan.</p>
+      </article>
+      <article class="tarjeta">
+        <h3>SaaS · software</h3>
+        <p>Una aplicación terminada para usuarios. El proveedor opera la aplicación y su infraestructura; el cliente administra el uso, los usuarios, sus datos, la configuración y las obligaciones que le correspondan.</p>
+        <p><em>Ejemplo:</em> un CRM web ya construido. Quien lo usa no necesita escribir SQL.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== LAB 01 · Matriz ===== -->
+  <section class="seccion tarjeta" id="matriz" aria-labelledby="matriz-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 01</span>
+      <h2 id="matriz-t">Matriz de responsabilidades</h2>
+      <span class="chip-actividad" data-actividad-chip="p7-matriz">○ Pendiente</span>
+    </div>
+    <p>Mueve el control o elige un modelo. La pila muestra quién administra cada capa. Recorre IaaS, PaaS, DBaaS y SaaS para completar la actividad.</p>
+
+    <label for="rango-servicio"><strong>Modelo de servicio:</strong> <span id="rango-valor">IaaS</span></label>
+    <input type="range" id="rango-servicio" class="rango-servicio" min="0" max="4" step="1" value="1" aria-describedby="rango-ayuda">
+    <div class="marcas-rango" aria-hidden="true"><span>Local</span><span>IaaS</span><span>PaaS</span><span>DBaaS</span><span>SaaS</span></div>
+    <p class="sr-only" id="rango-ayuda">Usa las flechas izquierda y derecha para cambiar de modelo.</p>
+
+    <div class="segmentado" role="group" aria-label="Elegir modelo de servicio" id="botones-servicio" style="margin-top:12px">
+      <button type="button" data-servicio="0" aria-pressed="false">Local (referencia)</button>
+      <button type="button" data-servicio="1" aria-pressed="true">IaaS</button>
+      <button type="button" data-servicio="2" aria-pressed="false">PaaS</button>
+      <button type="button" data-servicio="3" aria-pressed="false">DBaaS</button>
+      <button type="button" data-servicio="4" aria-pressed="false">SaaS</button>
+    </div>
+
+    <div class="leyenda" aria-label="Leyenda">
+      <span class="resp resp-P">■ Proveedor</span>
+      <span class="resp resp-C">▲ Cliente</span>
+      <span class="resp resp-S">◆ Compartida</span>
+      <span class="resp resp-D">? Depende del contrato</span>
+    </div>
+
+    <div class="info-modelo nota" id="info-modelo" aria-live="polite"></div>
+    <ol class="pila" id="pila" aria-label="Pila de responsabilidades del modelo elegido"></ol>
+    <p class="marcador" id="matriz-avance" role="status"></p>
+    <p class="advertencia"><strong>Advertencia de simplificación:</strong> esta matriz resume un patrón general. Las responsabilidades exactas dependen del proveedor, del servicio concreto y del contrato. DBaaS aparece como columna aparte solo para estudiarlo: no es un nivel taxonómico obligatorio al mismo nivel que IaaS, PaaS y SaaS.</p>
+
+    <details>
+      <summary><strong>Ver comparación completa en tabla</strong></summary>
+      <div class="tabla-scroll" style="margin-top:10px">
+        <table id="tabla-resp">
+          <caption>Quién administra cada capa en cada modelo (patrón general)</caption>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===== LAB 02 · Decisiones ===== -->
+  <section class="seccion tarjeta" id="decision" aria-labelledby="decision-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 02</span>
+      <h2 id="decision-t">Constructor de decisiones en la nube</h2>
+      <span class="aviso-sim">⚠ Simulación educativa</span>
+      <span class="chip-actividad" data-actividad-chip="p7-decision">○ Pendiente</span>
+    </div>
+    <p><strong>Escenario:</strong> una comercializadora necesita un pequeño sistema de facturación y control de inventarios. Marca las prioridades del equipo y pide una recomendación. La heurística es didáctica: muestra el razonamiento, no una regla universal.</p>
+    <form id="form-decision">
+      <fieldset style="border:0;padding:0;margin:0">
+        <legend class="sr-only">Prioridades del proyecto</legend>
+        <div class="prioridades">
+          <label class="prioridad"><input type="checkbox" name="prioridad" value="control"><span><strong>Control total</strong><small>Elegir sistema operativo, versión y configuración fina del motor.</small></span></label>
+          <label class="prioridad"><input type="checkbox" name="prioridad" value="equipo"><span><strong>Equipo pequeño</strong><small>No hay administrador de bases de datos a tiempo completo.</small></span></label>
+          <label class="prioridad"><input type="checkbox" name="prioridad" value="appLista"><span><strong>Necesidad de una aplicación lista</strong><small>Se prefiere usar un sistema de facturación ya construido.</small></span></label>
+          <label class="prioridad"><input type="checkbox" name="prioridad" value="evitarDependencia"><span><strong>Evitar dependencia</strong><small>Poder cambiar de proveedor sin rehacer el sistema.</small></span></label>
+        </div>
+      </fieldset>
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario">Recomendar</button>
+        <button type="reset" class="btn">Limpiar</button>
+      </div>
+    </form>
+    <div id="recomendacion" aria-live="polite"></div>
+  </section>
+
+  <!-- ===== Ventajas y desventajas ===== -->
+  <section class="seccion" aria-labelledby="balance-t">
+    <h2 id="balance-t">Balance de DBaaS: control frente a comodidad</h2>
+    <div class="rejilla-2">
+      <article class="tarjeta">
+        <h3>Ventajas</h3>
+        <ul>
+          <li>Puesta en marcha rápida.</li>
+          <li>Menor carga operativa (instalación, parches del motor).</li>
+          <li>Copias de seguridad y monitorización administradas, cuando el plan las incluye.</li>
+          <li>Elasticidad según el servicio contratado.</li>
+          <li>Disponibilidad y mantenimiento gestionados.</li>
+        </ul>
+      </article>
+      <article class="tarjeta">
+        <h3>Inconvenientes</h3>
+        <ul>
+          <li>Costo recurrente y por consumo.</li>
+          <li>Restricciones de configuración y de extensiones.</li>
+          <li>Dependencia de APIs propietarias y herramientas del proveedor.</li>
+          <li>Límites regionales y latencia.</li>
+          <li>Costos de salida y transferencia de datos.</li>
+          <li>Dependencia contractual y del <button type="button" class="termino" data-termino="sla">SLA</button>.</li>
+        </ul>
+      </article>
+    </div>
+    <p class="nota"><strong>Vendor lock-in:</strong> dificultad técnica, económica u operativa para cambiar de proveedor. Se reduce con SQL estándar, formatos abiertos, migraciones documentadas, backups exportables, pruebas de restauración, una capa de abstracción de acceso y evitando servicios exclusivos cuando no hacen falta. <strong>No se elimina por completo.</strong></p>
+  </section>
+
+  <!-- ===== LAB 03 · Lock-in ===== -->
+  <section class="seccion tarjeta" id="lockin" aria-labelledby="lockin-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 03</span>
+      <h2 id="lockin-t">Minijuego: desactiva el vendor lock-in</h2>
+      <span class="chip-actividad" data-actividad-chip="p7-lockin">○ Pendiente</span>
+    </div>
+    <p>1) Pulsa un <strong>riesgo</strong>. 2) Pulsa la <strong>mitigación</strong> que lo reduce. Algunas mitigaciones sirven para más de un riesgo.</p>
+    <p class="marcador" id="lockin-marcador" role="status">Riesgos mitigados: 0 de 4</p>
+    <div class="lockin">
+      <div>
+        <h3>Riesgos</h3>
+        <div class="lista-fichas" id="lista-riesgos"></div>
+      </div>
+      <div>
+        <h3>Mitigaciones</h3>
+        <div class="lista-fichas" id="lista-mitigaciones"></div>
+      </div>
+    </div>
+    <div class="feedback-caja" id="lockin-feedback" aria-live="polite">Elige primero un riesgo.</div>
+    <div class="acciones"><button type="button" class="btn" id="lockin-reintentar">↺ Reintentar</button></div>
+  </section>
+
+  <!-- ===== Caso puente ===== -->
+  <section class="seccion caso" id="caso" aria-labelledby="caso-t">
+    <h2 id="caso-t">Caso que conecta las dos preguntas: el sistema comercial de la empresa</h2>
+    <div class="cadena" aria-label="Cadena de componentes del sistema comercial">
+      <span class="pieza">Terminal del vendedor</span><span class="sep" aria-hidden="true">→</span>
+      <span class="pieza">API de facturación e inventarios</span><span class="sep" aria-hidden="true">→</span>
+      <span class="pieza">Base de datos</span>
+    </div>
+    <p>En la <a href="index.html#caso">pregunta 2</a> vimos que es un sistema de 3 capas y que su DBMS podría ser shared-nothing por dentro. Ahora, la tercera mirada: <strong>¿quién opera ese DBMS?</strong></p>
+    <button type="button" class="btn btn-primario" id="caso-revelar" aria-expanded="false" aria-controls="caso-revelacion">Ver cómo se contrata el DBMS</button>
+    <div class="revelacion" id="caso-revelacion" hidden>
+      <p>Ese DBMS podría estar contratado como <strong>DBaaS</strong>: el proveedor aplica parches y, según el plan, gestiona backups y réplicas. La comercializadora sigue diseñando las tablas de facturas, clientes y bodegas, decidiendo quién puede ver los datos de ventas y probando que sabe restaurar una copia.</p>
+      <p>Tres niveles, tres preguntas: <em>arquitectura del SI</em> (3 capas), <em>arquitectura interna del motor</em> (por ejemplo, shared-nothing) y <em>modelo de servicio</em> (DBaaS). Ninguna respuesta invalida a las otras.</p>
+    </div>
+  </section>
+
+  <!-- ===== LAB 04 · Quiz ===== -->
+  <section class="seccion tarjeta" id="reto" aria-labelledby="reto-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 04</span>
+      <h2 id="reto-t">Quiz final</h2>
+      <span class="chip-actividad" data-actividad-chip="p7-quiz">○ Pendiente</span>
+    </div>
+    <p>Cuatro preguntas. Responde todas y pulsa «Comprobar respuestas».</p>
+    <div id="quiz-p7"></div>
+  </section>
+
+  <!-- ===== Respuesta de examen ===== -->
+  <section class="seccion respuesta" id="respuesta" aria-labelledby="respuesta-t">
+    <h2 id="respuesta-t">Respuesta de examen</h2>
+    <details open>
+      <summary>Respuesta completa para examen</summary>
+      <div id="resp-completa" class="texto-examen">
+        <p>DBaaS es un servicio administrado especializado en bases de datos: el proveedor se encarga de gran parte del aprovisionamiento y operación del motor, mientras el cliente sigue diseñando el esquema, administrando accesos, realizando consultas y protegiendo sus datos. Se diferencia de IaaS porque, en una máquina virtual, el cliente normalmente instala y mantiene el DBMS; de PaaS porque este término abarca plataformas gestionadas para ejecutar aplicaciones, mientras DBaaS se concentra en el servicio de datos; y de SaaS porque SaaS entrega una aplicación completa lista para usar. DBaaS suele ubicarse dentro de los servicios gestionados de tipo PaaS, no como una capa universal adicional. Su principal ventaja es reducir tareas operativas y acelerar el despliegue, con capacidades de backup, escalado y disponibilidad que dependen del plan contratado. A cambio, disminuye el control sobre el sistema subyacente y puede aumentar el vendor lock-in por funciones propietarias, costos de salida y dificultad de migración. Conviene evaluar la responsabilidad compartida y mitigar la dependencia con estándares abiertos, respaldos exportables y planes de migración. En el contexto comercial, contratar el DBMS de facturación como DBaaS reduce la carga del equipo de TI, pero la comercializadora sigue respondiendo por el esquema de facturas y clientes, los permisos sobre datos de ventas y la recuperación de sus asientos; por eso conviene negociar exportaciones en formato abierto y ensayar la restauración.</p>
+      </div>
+      <div class="acciones"><button type="button" class="btn btn-primario" data-copiar="resp-completa">⧉ Copiar respuesta</button></div>
+      <p class="estado-copia" id="resp-completa-estado" role="status" aria-live="polite"></p>
+    </details>
+    <details>
+      <summary>Resumen oral de 45 segundos</summary>
+      <div id="resp-oral" class="texto-examen">
+        <p>IaaS, PaaS y SaaS se diferencian por cuánto administra el proveedor. En IaaS recibo máquinas virtuales e instalo yo el motor; en PaaS la plataforma ejecuta mi código; en SaaS uso una aplicación terminada. DBaaS es una base de datos gestionada, normalmente dentro de PaaS, no una cuarta capa: el proveedor opera el motor y, según el plan, backups y escalado; yo respondo por esquema, consultas, permisos y protección de datos. Gano rapidez y menos carga operativa, pero pierdo control y arriesgo vendor lock-in, que mitigo con estándares abiertos y respaldos exportables. En mi comercializadora: el proveedor opera el motor de facturación; yo respondo por facturas y clientes.</p>
+      </div>
+      <p class="contador" id="resp-oral-contador"></p>
+      <div class="acciones"><button type="button" class="btn btn-primario" data-copiar="resp-oral">⧉ Copiar resumen</button></div>
+      <p class="estado-copia" id="resp-oral-estado" role="status" aria-live="polite"></p>
+    </details>
+  </section>
+
+  <section class="seccion tarjeta glosario" id="glosario" aria-labelledby="glosario-t">
+    <h2 id="glosario-t">Glosario</h2>
+    <p>Los términos subrayados con puntos en la página abren su definición; aquí tienes la lista completa.</p>
+    <dl id="glosario-lista"></dl>
+  </section>
+
+  <section class="seccion tarjeta fuentes" id="fuentes" aria-labelledby="fuentes-t">
+    <h2 id="fuentes-t">Fuentes</h2>
+    <p>La hoja de Bases de Datos II fija la pregunta; las definiciones técnicas se apoyan en estas fuentes, explicadas con redacción propia:</p>
+    <ol>
+      <li>Microsoft Learn, <a href="https://learn.microsoft.com/es-es/azure/security/fundamentals/shared-responsibility" rel="noopener">Responsabilidad compartida en la nube</a>: diferencias de responsabilidad entre IaaS, PaaS y SaaS.</li>
+      <li>AWS Whitepaper, <a href="https://d1.awsstatic.com/whitepapers/AWS_Serverless_Multi-Tier_Architectures.pdf" rel="noopener">AWS Serverless Multi-Tier Architectures</a>: arquitectura multinivel con servicios gestionados.</li>
+      <li>AWS Architecture Blog, <a href="https://aws.amazon.com/blogs/architecture/building-a-three-tier-architecture-on-a-budget/" rel="noopener">Building a three-tier architecture on a budget</a>: capas de presentación, lógica y datos.</li>
+      <li>Duke University, CompSci 516, <a href="https://courses.cs.duke.edu/fall18/compsci516/Lectures/Lecture-20-Parallel-DB-notes.pdf" rel="noopener">Lecture 20 — Parallel Database Systems</a> (base de la pregunta 2).</li>
+      <li>Diapositivas basadas en Silberschatz, Korth y Sudarshan, <em>Database System Concepts</em>, <a href="https://homepages.cwi.nl/~manegold/teaching/DBtech/slides/ch18-4.pdf" rel="noopener">arquitecturas de bases de datos paralelas</a> (base de la pregunta 2).</li>
+    </ol>
+  </section>
+</main>
+
+<footer>
+  <div class="pie">
+    <p>Laboratorio didáctico de Bases de Datos II · Todas las simulaciones son educativas y no están conectadas a ningún DBMS ni servicio en la nube. No se solicita ninguna credencial. El progreso se guarda solo en este navegador (localStorage), sin datos personales. © <span id="anio">2026</span></p>
+  </div>
+</footer>
+</body>
+</html>

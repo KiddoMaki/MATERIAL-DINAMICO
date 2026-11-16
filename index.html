@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pregunta 2 · Cliente-servidor vs. DBMS paralelos — Laboratorio Arquitecturas BD vs. SI</title>
+  <meta name="description" content="Laboratorio interactivo: por qué cliente-servidor no es una arquitectura interna de bases de datos y cómo se contrasta con Shared Memory, Shared Disk y Shared Nothing.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/logic.js" defer></script>
+  <script src="js/common.js" defer></script>
+  <script src="js/pregunta2.js" defer></script>
+</head>
+<body data-nivel="universitario">
+
+<!-- Iconos SVG propios -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 32 32"><rect x="3" y="4" width="26" height="8" rx="2" fill="#3b82f6"/><rect x="3" y="14" width="26" height="6" rx="2" fill="#a78bfa"/><rect x="3" y="22" width="26" height="6" rx="2" fill="#fbbf24"/><circle cx="8" cy="8" r="1.6" fill="#fff"/><circle cx="8" cy="17" r="1.4" fill="#fff"/><circle cx="8" cy="25" r="1.4" fill="#fff"/></symbol>
+  <symbol id="i-navegador" viewBox="0 0 64 64"><rect x="6" y="10" width="52" height="40" rx="6" fill="#e0e9ff" stroke="#1d4ed8" stroke-width="3"/><path d="M6 20h52" stroke="#1d4ed8" stroke-width="3"/><circle cx="13" cy="15" r="2" fill="#1d4ed8"/><circle cx="20" cy="15" r="2" fill="#1d4ed8"/><rect x="14" y="27" width="36" height="5" rx="2.5" fill="#1d4ed8" opacity=".35"/><rect x="14" y="36" width="22" height="5" rx="2.5" fill="#1d4ed8" opacity=".6"/><rect x="22" y="52" width="20" height="4" rx="2" fill="#1d4ed8"/></symbol>
+  <symbol id="i-api" viewBox="0 0 64 64"><rect x="10" y="8" width="44" height="14" rx="3" fill="#d9f3ef" stroke="#0f766e" stroke-width="3"/><rect x="10" y="25" width="44" height="14" rx="3" fill="#d9f3ef" stroke="#0f766e" stroke-width="3"/><rect x="10" y="42" width="44" height="14" rx="3" fill="#d9f3ef" stroke="#0f766e" stroke-width="3"/><circle cx="18" cy="15" r="2.5" fill="#0f766e"/><circle cx="18" cy="32" r="2.5" fill="#0f766e"/><circle cx="18" cy="49" r="2.5" fill="#0f766e"/><path d="M30 15h16M30 32h16M30 49h16" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="i-bd" viewBox="0 0 64 64"><ellipse cx="32" cy="13" rx="20" ry="7" fill="#ede4ff" stroke="#6d28d9" stroke-width="3"/><path d="M12 13v38c0 3.9 9 7 20 7s20-3.1 20-7V13" fill="#ede4ff" stroke="#6d28d9" stroke-width="3"/><path d="M12 26c0 3.9 9 7 20 7s20-3.1 20-7M12 39c0 3.9 9 7 20 7s20-3.1 20-7" fill="none" stroke="#6d28d9" stroke-width="3"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9.5" y="9.5" width="5" height="5" fill="currentColor"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-ram" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 10v3M10 10v3M14 10v3M18 10v3M5 16v3M9 16v3M15 16v3M19 16v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-disco" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-red" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="5" cy="19" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="19" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5M12 12.5l-5.5 4.5M12 12.5l5.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l3 2M9 2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="barra">
+  <div class="barra-in">
+    <a class="marca" href="index.html"><svg aria-hidden="true"><use href="#i-logo"/></svg>Lab · Arquitecturas BD vs. SI</a>
+    <nav aria-label="Páginas del laboratorio">
+      <ul>
+        <li><a href="index.html" aria-current="page">Pregunta 2</a></li>
+        <li><a href="pregunta7.html">Pregunta 7</a></li>
+        <li><a class="nav-examen" href="#respuesta">Respuesta de examen</a></li>
+      </ul>
+    </nav>
+    <div class="barra-herr">
+      <div class="nivel" role="group" aria-label="Nivel de explicación">
+        <button type="button" data-set-nivel="sencillo" aria-pressed="false">Explicación sencilla</button>
+        <button type="button" data-set-nivel="universitario" aria-pressed="true">Nivel universitario</button>
+      </div>
+      <div class="progreso">
+        <label for="progreso-barra">Progreso</label>
+        <progress id="progreso-barra" max="8" value="0">0 de 8</progress>
+        <span id="progreso-texto" aria-hidden="true">0/8</span>
+        <button type="button" class="btn-mini" id="reiniciar-progreso">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="anuncios" class="sr-only" aria-live="polite"></div>
+
+<main id="contenido">
+
+  <!-- ===== Portada ===== -->
+  <section class="hero" aria-labelledby="titulo">
+    <div>
+      <span class="eyebrow">Bases de Datos II · Pregunta 2</span>
+      <h1 id="titulo">Cliente-servidor no vive «dentro» de la base de datos</h1>
+      <blockquote class="enunciado">
+        <p>«El modelo Cliente-Servidor (en 2 o 3 capas) describe la separación funcional entre el procesamiento interactivo del cliente (front-end) y los servicios centrales del servidor (back-end). Explique por qué resulta un error conceptual clasificar a Cliente-Servidor como una arquitectura interna de almacenamiento y procesamiento de BD, y contraste este modelo de despliegue de software con las arquitecturas físicas de hardware en DBMS paralelos como Shared Memory, Disk y Shared Nothing.»</p>
+        <cite>Hoja «Bases de Datos II — Arquitecturas BD vs. Arquitecturas SI» (16/11/2026), pregunta 2.</cite>
+      </blockquote>
+      <p class="solo-uni"><strong>Tesis:</strong> cliente-servidor es un modelo de <em>distribución de responsabilidades y comunicación</em> entre componentes de una aplicación. Shared Memory, Shared Disk y Shared Nothing son arquitecturas <em>internas de recursos de cómputo</em> de un <button type="button" class="termino" data-termino="dbms">DBMS</button> paralelo. Son ejes de análisis distintos, pueden coexistir y <strong>no son alternativas excluyentes</strong>.</p>
+      <p class="solo-sencillo"><strong>En pocas palabras:</strong> cliente-servidor responde «¿quién le pide qué a quién?» dentro de una aplicación. Shared Memory, Shared Disk y Shared Nothing responden «¿cómo se reparten la memoria y los discos las máquinas que forman el motor de base de datos?». Son dos preguntas diferentes, y una misma aplicación puede tener respuesta para las dos.</p>
+    </div>
+    <aside class="idea-clave" aria-labelledby="idea-clave-t">
+      <h2 id="idea-clave-t"><svg class="reloj" aria-hidden="true"><use href="#i-reloj"/></svg>Idea clave en 20 segundos</h2>
+      <p><strong>Cliente-servidor</strong> = cómo se reparte el trabajo de una <em>aplicación</em> en capas (presentación, lógica, datos).</p>
+      <p><strong>Shared Memory / Disk / Nothing</strong> = cómo reparte el <em>motor de BD</em> por dentro sus CPU, memoria y discos.</p>
+      <p>Son dos niveles distintos, así que se combinan: el sistema de facturación de una comercializadora (3 capas) puede usar un DBMS shared-nothing.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Conceptos ===== -->
+  <section class="seccion" aria-labelledby="conceptos-t">
+    <h2 id="conceptos-t">Dos niveles de análisis</h2>
+    <div class="rejilla-2">
+      <article class="tarjeta">
+        <h3>Nivel 1 · Arquitectura del sistema de información</h3>
+        <p><strong>Cliente-servidor de 2 capas:</strong> el cliente (interfaz y, según el diseño, parte de la lógica) se comunica con un servidor que presta servicios de datos, por ejemplo un DBMS. Dónde queda exactamente la lógica de negocio varía: puede estar en el cliente o en el servidor (procedimientos almacenados, vistas).</p>
+        <p><strong>Cliente-servidor de 3 capas:</strong> presentación (navegador) ↔ lógica de negocio o <button type="button" class="termino" data-termino="api">API</button> (servidor de aplicaciones) ↔ datos (DBMS). El cliente solicita, la API valida y aplica reglas, y el DBMS consulta y persiste. En una comercializadora, la interfaz del vendedor, la API de facturación y el DBMS son esas tres capas: la API comprueba el stock y las condiciones de venta antes de tocar los datos.</p>
+        <p class="solo-uni">Es una decisión de <em>diseño y despliegue de software</em>: separa responsabilidades (<button type="button" class="termino" data-termino="front-end">front-end</button> / <button type="button" class="termino" data-termino="back-end">back-end</button>) y define protocolos de comunicación (HTTP, protocolo del DBMS).</p>
+      </article>
+      <article class="tarjeta">
+        <h3>Nivel 2 · Arquitectura interna de un DBMS paralelo</h3>
+        <p><strong>Shared Memory:</strong> varios procesadores acceden a una memoria principal común.</p>
+        <p><strong>Shared Disk:</strong> cada <button type="button" class="termino" data-termino="nodo">nodo</button> tiene memoria privada, pero todos acceden a un almacenamiento común.</p>
+        <p><strong>Shared Nothing:</strong> cada nodo tiene su propia <button type="button" class="termino" data-termino="cpu">CPU</button>, <button type="button" class="termino" data-termino="ram">memoria</button> y <button type="button" class="termino" data-termino="disco">disco</button>, y se comunican por mensajes a través de la red.</p>
+        <p class="solo-uni">Es una decisión sobre <em>cómo se organizan los recursos de cómputo</em> del motor para ejecutar consultas en paralelo: no dice nada de quién es el cliente ni de cuántas capas tiene la aplicación.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== LAB 01 · Simulador 2 vs 3 capas ===== -->
+  <section class="seccion tarjeta" id="simulador" aria-labelledby="sim-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 01</span>
+      <h2 id="sim-t">Simulador de solicitudes: 2 capas vs. 3 capas</h2>
+      <span class="aviso-sim">⚠ Simulación educativa</span>
+      <span class="chip-actividad" data-actividad-chip="p2-simulador">○ Pendiente</span>
+    </div>
+    <p>Elige una topología y un caso, y envía la consulta. Verás qué hace cada componente. No hay ningún servidor ni base de datos real conectados: los mensajes y el SQL son ilustrativos.</p>
+
+    <div class="rejilla-2">
+      <div>
+        <span class="rotulo" id="topo-rotulo"><strong>Topología</strong></span>
+        <div class="segmentado" role="group" aria-labelledby="topo-rotulo">
+          <button type="button" data-topologia="2" aria-pressed="false">2 capas</button>
+          <button type="button" data-topologia="3" aria-pressed="true">3 capas</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="caso-sim">Caso de uso (datos ficticios)</label>
+        <select id="caso-sim">
+          <option value="stock">Consultar el stock de un producto en bodega</option>
+          <option value="factura">Consultar el estado de una factura de venta</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="topologia" id="topologia" aria-hidden="true"></div>
+    <p class="sr-only" id="topologia-desc"></p>
+
+    <div class="acciones">
+      <button type="button" class="btn btn-primario" id="sim-enviar">▶ Enviar consulta</button>
+      <button type="button" class="btn" id="sim-pausa" disabled>⏸ Pausar</button>
+      <button type="button" class="btn" id="sim-siguiente">⏭ Paso siguiente</button>
+      <button type="button" class="btn" id="sim-reiniciar">↺ Reiniciar</button>
+    </div>
+
+    <h3 class="sr-only">Registro de la simulación</h3>
+    <ol class="registro" id="sim-registro" aria-live="polite"></ol>
+    <p class="nota" id="sim-nota"></p>
+  </section>
+
+  <!-- ===== LAB 02 · DBMS paralelo ===== -->
+  <section class="seccion tarjeta" id="laboratorio" aria-labelledby="lab-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 02</span>
+      <h2 id="lab-t">Laboratorio de DBMS paralelo</h2>
+      <span class="aviso-sim">⚠ Simulación educativa</span>
+      <span class="chip-actividad" data-actividad-chip="p2-laboratorio">○ Pendiente</span>
+    </div>
+    <p>Cambia de arquitectura y observa qué recursos pasan a ser comunes. Toca cualquier CPU, memoria o disco para ver su explicación. Luego simula una consulta repartida entre los tres nodos.</p>
+
+    <div role="tablist" aria-label="Arquitecturas de DBMS paralelo" class="segmentado" id="tabs-arq">
+      <button type="button" role="tab" id="tab-sm" aria-controls="panel-arq" aria-selected="true" data-arq="sm">Shared Memory</button>
+      <button type="button" role="tab" id="tab-sd" aria-controls="panel-arq" aria-selected="false" data-arq="sd" tabindex="-1">Shared Disk</button>
+      <button type="button" role="tab" id="tab-sn" aria-controls="panel-arq" aria-selected="false" data-arq="sn" tabindex="-1">Shared Nothing</button>
+    </div>
+
+    <div class="panel-arq" id="panel-arq" role="tabpanel" aria-labelledby="tab-sm" tabindex="0">
+      <div class="diagrama-arq" id="diagrama-arq"></div>
+      <p class="descripcion-textual" id="arq-descripcion"></p>
+      <div class="ficha-arq" id="arq-ficha"></div>
+      <div class="acciones">
+        <button type="button" class="btn btn-primario" id="arq-simular">▶ Simular consulta repartida</button>
+        <button type="button" class="btn" id="arq-pausa" disabled>⏸ Pausar</button>
+        <button type="button" class="btn" id="arq-reiniciar">↺ Reiniciar</button>
+      </div>
+      <p class="marcador" id="arq-avance" role="status"></p>
+      <div class="explica-recurso nota" id="arq-explica" aria-live="polite">
+        <h4>Explicación del componente</h4>
+        <p>Selecciona una CPU, una memoria, un disco o la red de interconexión.</p>
+      </div>
+      <ol class="registro" id="arq-registro" aria-live="polite"></ol>
+      <p class="nota"><strong>Importante:</strong> esta simulación es cualitativa. No muestra tiempos ni métricas porque no se mide nada real; solo señala dónde suele aparecer la contención en cada arquitectura.</p>
+    </div>
+  </section>
+
+  <!-- ===== Tabla de contraste ===== -->
+  <section class="seccion" aria-labelledby="contraste-t">
+    <h2 id="contraste-t">Contraste explícito</h2>
+    <div class="tabla-scroll">
+      <table>
+        <caption>Cliente-servidor frente a arquitecturas de DBMS paralelos</caption>
+        <thead>
+          <tr><th scope="col">Criterio</th><th scope="col" class="col-cs">Cliente-servidor (2 o 3 capas)</th><th scope="col" class="col-par">Shared Memory / Disk / Nothing</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Pregunta que responde</th><td class="col-cs">¿Quién presta el servicio a quién y en qué capa?</td><td class="col-par">¿Cómo comparten o aíslan CPU, memoria y discos los nodos del motor de BD?</td></tr>
+          <tr><th scope="row">Nivel</th><td class="col-cs">Arquitectura y despliegue de software del sistema de información</td><td class="col-par">Arquitectura física de procesamiento del DBMS</td></tr>
+          <tr><th scope="row">Unidad principal</th><td class="col-cs">Componentes de software: cliente, servidor de aplicaciones, servidor de datos</td><td class="col-par">Nodos o procesadores con sus recursos (CPU, RAM, disco)</td></tr>
+          <tr><th scope="row">Qué se distribuye</th><td class="col-cs">Responsabilidades: presentación, lógica de negocio, acceso a datos</td><td class="col-par">Trabajo de las consultas y, según el caso, los datos (particiones)</td></tr>
+          <tr><th scope="row">Ejemplo</th><td class="col-cs">Navegador → API de facturación → PostgreSQL</td><td class="col-par">Un motor que reparte la tabla de facturas en tres nodos con discos propios (shared-nothing)</td></tr>
+          <tr><th scope="row">Problema típico</th><td class="col-cs">Acoplamiento entre capas, latencia de red, seguridad de la API, dónde ubicar la lógica</td><td class="col-par">Contención de memoria o de almacenamiento, coherencia de caché y bloqueos, partición y coordinación entre nodos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== LAB 03 · Juego de clasificación ===== -->
+  <section class="seccion tarjeta" id="juego" aria-labelledby="juego-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 03</span>
+      <h2 id="juego-t">Juego: ¿a qué nivel pertenece?</h2>
+      <span class="chip-actividad" data-actividad-chip="p2-juego">○ Pendiente</span>
+    </div>
+    <p>Para cada tarjeta, elige su nivel con un botón (funciona con ratón, teclado o pantalla táctil).</p>
+    <div class="zonas-leyenda">
+      <div class="zona zona-si">▣ Arquitectura SI / cliente-servidor</div>
+      <div class="zona zona-dbms">◆ Arquitectura interna del DBMS</div>
+    </div>
+    <p class="marcador" id="juego-marcador" role="status" aria-live="polite">Aciertos: 0 de 8 · Respondidas: 0</p>
+    <div class="cartas" id="cartas"></div>
+    <div class="acciones"><button type="button" class="btn" id="juego-reintentar">↺ Reintentar juego</button></div>
+  </section>
+
+  <!-- ===== Caso puente ===== -->
+  <section class="seccion caso" id="caso" aria-labelledby="caso-t">
+    <h2 id="caso-t">Caso que conecta las dos preguntas: el sistema comercial de la empresa</h2>
+    <p>Una comercializadora donde el vendedor consulta el stock y factura pedidos desde su terminal.</p>
+    <div class="cadena" aria-label="Cadena de componentes del sistema comercial">
+      <span class="pieza">Terminal / navegador</span><span class="sep" aria-hidden="true">→</span>
+      <span class="pieza">API de facturación e inventarios</span><span class="sep" aria-hidden="true">→</span>
+      <span class="pieza">Base de datos</span>
+    </div>
+    <p>Visto desde la pregunta 2, esto es un sistema <strong>cliente-servidor de 3 capas</strong>. Pero ¿qué ocurre dentro de la caja «Base de datos»?</p>
+    <button type="button" class="btn btn-primario" id="caso-revelar" aria-expanded="false" aria-controls="caso-revelacion">Mirar dentro del DBMS</button>
+    <div class="revelacion" id="caso-revelacion" hidden>
+      <p><strong>Dentro del DBMS</strong> podría haber, por ejemplo, tres nodos <em>shared-nothing</em>: cada uno guarda una partición de la tabla de facturas (por ejemplo, por rango de fecha o por cliente) en su propio disco. El navegador y la API no necesitan saberlo; la API sigue enviando una consulta SQL y recibe filas.</p>
+      <p>Las dos descripciones son verdaderas a la vez porque miran niveles distintos. En la <a href="pregunta7.html#caso">pregunta 7</a> veremos que ese mismo DBMS podría estar contratado como DBaaS.</p>
+    </div>
+  </section>
+
+  <!-- ===== LAB 04 · Reto final ===== -->
+  <section class="seccion tarjeta" id="reto" aria-labelledby="reto-t">
+    <div class="lab-cabecera">
+      <span class="etiqueta-lab">LAB 04</span>
+      <h2 id="reto-t">Reto final</h2>
+      <span class="chip-actividad" data-actividad-chip="p2-quiz">○ Pendiente</span>
+    </div>
+    <p>Cuatro preguntas. Responde todas y pulsa «Comprobar respuestas».</p>
+    <div id="quiz-p2"></div>
+  </section>
+
+  <!-- ===== Respuesta de examen ===== -->
+  <section class="seccion respuesta" id="respuesta" aria-labelledby="respuesta-t">
+    <h2 id="respuesta-t">Respuesta de examen</h2>
+    <details open>
+      <summary>Respuesta completa para examen</summary>
+      <div id="resp-completa" class="texto-examen">
+        <p>Es un error clasificar cliente-servidor como arquitectura interna de bases de datos porque describe la organización funcional de una aplicación y la comunicación entre clientes y servidores, no cómo el DBMS distribuye físicamente sus procesadores, memorias y discos. En dos capas, el cliente interactúa con un servidor que presta servicios de datos; en tres capas, la presentación se separa de la lógica de negocio y del almacenamiento. En cambio, Shared Memory, Shared Disk y Shared Nothing describen cómo un DBMS paralelo organiza recursos: memoria común entre procesadores, discos comunes con memorias privadas o nodos con CPU, memoria y discos propios, respectivamente. Estos enfoques no compiten entre sí: una aplicación de tres capas puede usar un DBMS shared-nothing en su capa de datos. Por tanto, cliente-servidor pertenece al nivel de arquitectura y despliegue de software del sistema de información, mientras que las arquitecturas compartidas o no compartidas corresponden al nivel físico de procesamiento del motor de base de datos. En el contexto comercial: la terminal del vendedor, la API de facturación y el DBMS son las tres capas de la aplicación; que el motor sea shared-nothing con la tabla de facturas particionada en varios nodos es una decisión interna de la capa de datos, invisible para la API.</p>
+      </div>
+      <div class="acciones"><button type="button" class="btn btn-primario" data-copiar="resp-completa">⧉ Copiar respuesta</button></div>
+      <p class="estado-copia" id="resp-completa-estado" role="status" aria-live="polite"></p>
+    </details>
+    <details>
+      <summary>Resumen oral de 45 segundos</summary>
+      <div id="resp-oral" class="texto-examen">
+        <p>Cliente-servidor y las arquitecturas paralelas responden preguntas distintas. Cliente-servidor organiza una aplicación: quién pide y quién presta el servicio, en dos capas, cliente y servidor de datos, o en tres, presentación, lógica de negocio y datos. Shared Memory, Shared Disk y Shared Nothing describen el interior de un DBMS paralelo: si los procesadores comparten memoria, si comparten discos con memorias privadas o si cada nodo tiene CPU, memoria y disco propios. Por eso, clasificar cliente-servidor como arquitectura interna de la base de datos es un error de nivel. Además, no se excluyen: una comercializadora de 3 capas puede usar un DBMS shared-nothing con la tabla de facturas repartida.</p>
+      </div>
+      <p class="contador" id="resp-oral-contador"></p>
+      <div class="acciones"><button type="button" class="btn btn-primario" data-copiar="resp-oral">⧉ Copiar resumen</button></div>
+      <p class="estado-copia" id="resp-oral-estado" role="status" aria-live="polite"></p>
+    </details>
+  </section>
+
+  <!-- ===== Glosario ===== -->
+  <section class="seccion tarjeta glosario" id="glosario" aria-labelledby="glosario-t">
+    <h2 id="glosario-t">Glosario</h2>
+    <p>Los términos subrayados con puntos en la página abren su definición; aquí tienes la lista completa.</p>
+    <dl id="glosario-lista"></dl>
+  </section>
+
+  <!-- ===== Fuentes ===== -->
+  <section class="seccion tarjeta fuentes" id="fuentes" aria-labelledby="fuentes-t">
+    <h2 id="fuentes-t">Fuentes</h2>
+    <p>La hoja de Bases de Datos II fija la pregunta; las definiciones técnicas se apoyan en estas fuentes, explicadas con redacción propia:</p>
+    <ol>
+      <li>AWS Architecture Blog, <a href="https://aws.amazon.com/blogs/architecture/building-a-three-tier-architecture-on-a-budget/" rel="noopener">Building a three-tier architecture on a budget</a>: separación de presentación, lógica y datos.</li>
+      <li>Duke University, CompSci 516, <a href="https://courses.cs.duke.edu/fall18/compsci516/Lectures/Lecture-20-Parallel-DB-notes.pdf" rel="noopener">Lecture 20 — Parallel Database Systems</a>: shared memory, shared disk y shared nothing.</li>
+      <li>Diapositivas basadas en Silberschatz, Korth y Sudarshan, <em>Database System Concepts</em>, <a href="https://homepages.cwi.nl/~manegold/teaching/DBtech/slides/ch18-4.pdf" rel="noopener">capítulo de arquitecturas de bases de datos paralelas</a>.</li>
+      <li>AWS Whitepaper, <a href="https://d1.awsstatic.com/whitepapers/AWS_Serverless_Multi-Tier_Architectures.pdf" rel="noopener">AWS Serverless Multi-Tier Architectures</a>: arquitectura multinivel.</li>
+      <li>Microsoft Learn, <a href="https://learn.microsoft.com/es-es/azure/security/fundamentals/shared-responsibility" rel="noopener">Responsabilidad compartida en la nube</a> (base de la pregunta 7).</li>
+    </ol>
+  </section>
+</main>
+
+<footer>
+  <div class="pie">
+    <p>Laboratorio didáctico de Bases de Datos II · Todas las simulaciones son educativas y no están conectadas a ningún DBMS ni servicio en la nube. El progreso se guarda solo en este navegador (localStorage), sin datos personales. © <span id="anio">2026</span></p>
+  </div>
+</footer>
+</body>
+</html>
